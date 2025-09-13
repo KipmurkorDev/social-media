@@ -1,4 +1,4 @@
-import { runTwitterAgent } from "./platforms/twitter";
+import { runTwitterAgent } from "./platforms/twitter.js";
 
 (async () => {
   try {
