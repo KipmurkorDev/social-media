@@ -6,7 +6,9 @@ import { cryptoNewsTool } from "../tools/cryptoNews.js";
 
 const twitterAgent = new Agent({
   name: "Twitter Agent",
-  model: google("gemini-2.5-flash"),
+  model: google("gemini-2.5-flash", {
+    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+  }),
   instructions: `
 You are a witty social media assistant for the crypto/Web3 space.
 Steps:
@@ -36,8 +38,6 @@ Return only the tweet text.
   }
 
   console.log("Generated Tweet:", tweet);
-
-  // 🔓 Uncomment when ready to post
   const twitterClient = new TwitterApi({
     appKey: process.env.TWITTER_API_KEY,
     appSecret: process.env.TWITTER_API_KEY_SECRET,
