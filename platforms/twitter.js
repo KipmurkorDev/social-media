@@ -3,6 +3,7 @@ import { Agent } from "@voltagent/core";
 import { google } from "@ai-sdk/google";
 import { TwitterApi } from "twitter-api-v2";
 import { cryptoNewsTool } from "../tools/cryptoNews.js";
+import { retry } from "../utils/retry.js"; // your retry utility
 
 const twitterAgent = new Agent({
   name: "Twitter Agent",
@@ -14,7 +15,7 @@ You are a witty social media assistant for the crypto/Web3 space.
 Steps:
 1. Use the cryptoNewsSearch tool to fetch the most relevant latest crypto, Web3, or DeFi news.
 2. Pick the single most trending or impactful headline.
-3. create a tweet that align to the headline provide data if needed.
+3. Create a tweet that aligns with the headline and provide data if needed.
 4. Write a tweet (max 280 chars) that:
    - Mentions the highlight clearly
    - Uses exactly 1 emoji
@@ -26,11 +27,24 @@ Steps:
 });
 
 export async function runTwitterAgent() {
-  const result = await twitterAgent.generateText(`
+  let result;
+
+  try {
+    // Use retry utility for AI generation
+    result = await retry(
+      () =>
+        twitterAgent.generateText(`
 As AI, fetch the latest trending crypto/Web3/DeFi news and generate a witty tweet.
 Always include 1 emoji, 1 hashtag, and make it under 280 characters.
 Return only the tweet text.
-  `);
+`),
+      4, // max 4 attempts
+      2000 // initial delay 2s
+    );
+  } catch (err) {
+    console.error("❌ AI generation failed after retries:", err);
+    return;
+  }
 
   let tweet = result.text.trim();
   if (tweet.length > 280) {
@@ -38,6 +52,7 @@ Return only the tweet text.
   }
 
   console.log("Generated Tweet:", tweet);
+
   const twitterClient = new TwitterApi({
     appKey: process.env.TWITTER_API_KEY,
     appSecret: process.env.TWITTER_API_KEY_SECRET,
@@ -45,6 +60,10 @@ Return only the tweet text.
     accessSecret: process.env.TWITTER_ACCESS_SECRET,
   });
 
-  const { data } = await twitterClient.v2.tweet(tweet);
-  console.log("✅ Posted to Twitter:", data);
+  try {
+    const { data } = await twitterClient.v2.tweet(tweet);
+    console.log("✅ Posted to Twitter:", data);
+  } catch (err) {
+    console.error("❌ Failed to post tweet:", err);
+  }
 }
