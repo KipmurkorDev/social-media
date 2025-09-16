@@ -25,7 +25,6 @@ Steps:
    - Maintain a **Reddit-style casual tone**, as if telling it to a friend.
    - Break into **short, easy-to-read paragraphs**.
    - End with a **thought-provoking or funny discussion question** that invites comments.
-3. If the story is about relationships -- Always include ages and genders (e.g., "I (28F), my boyfriend (30M)").
 4. Return only JSON in this format:
    {
      "title": "catchy and curiosity-driven",
